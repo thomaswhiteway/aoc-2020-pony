@@ -29,25 +29,21 @@ interface LineHandler
 
 
 class PasswordRule
-    var _min: U32
-    var _max: U32
+    var _first: USize
+    var _second: USize
     var _character: U8
 
-    new create(min: U32, max: U32, character: U8) =>
-        _min = min
-        _max = max
+    new create(first: USize, second: USize, character: U8) =>
+        _first = first - 1
+        _second = second - 1
         _character = character
 
     fun allows(password: String): Bool => 
-        var count: U32 = 0
-        for c in password.array().values() do
-            if c == _character then
-                count = count + 1
-            end
+        try
+            (password(_first)? == _character) xor (password(_second)? == _character)
+        else
+            false
         end
-
-        (_min <= count) and (count <= _max)
-
 
 actor PasswordHandler
     var _total: U32
@@ -63,15 +59,15 @@ actor PasswordHandler
         let range = rule_parts(0)?.split("-")
 
         (
-            PasswordRule(range(0)?.u32()?, 
-                         range(1)?.u32()?,
+            PasswordRule(range(0)?.usize()?, 
+                         range(1)?.usize()?,
                          rule_parts(1)?(0)?),
             parts(1)?
         )
 
     be handle_line(line: String iso) =>
         try
-            (let rules, let password) = parse_entry(consume line)?
+            (let rules, let password) = parse_entry(line.clone())?
             if rules.allows(password) then
                 _total = _total + 1
             end
