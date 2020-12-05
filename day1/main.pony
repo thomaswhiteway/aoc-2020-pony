@@ -40,21 +40,28 @@ interface EntryHandler
 actor MatchFinder
     let _env: Env
     let _target: U32
-    let _seen: Set[U32]
+    let _seen : Array[U32]
+    let _candidates: Map[U32, (U32, U32)]
 
     new create(env: Env, target: U32) =>
         _env = env
         _target = target
-        _seen = Set[U32]()
+        _candidates = Map[U32, (U32, U32)]
+        _seen = Array[U32]
 
     be handle_entry(entry: U32) =>
         let needed: U32 = _target - entry
-        if _seen.contains(needed) then
-            let result = entry * needed
+        try 
+            (let x: U32, let y: U32) = _candidates(needed)?
+            let result = entry * x * y
             _env.out.print(result.string())
         end
 
-        _seen.set(entry)
+        for other in _seen.values() do
+            _candidates.insert(entry + other, (entry, other))
+        end
+
+        _seen.push(entry)
 
 actor Main
     new create(env: Env) =>
