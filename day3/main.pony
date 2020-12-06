@@ -74,7 +74,21 @@ actor Main
         trees
 
     be handle_map(map: Array[String iso] iso) =>
-        let trees = count_trees(consume map, 3, 1)
+        let gradients: Array[(USize, USize)] = [
+            (1, 1)
+            (3, 1)
+            (5, 1)
+            (7, 1)
+            (1, 2)
+        ]
+
+        var trees: USize = 1
+        let map' = recover val consume map end
+
+        for (dx, dy) in gradients.values() do
+            trees = trees * count_trees(map', dx, dy)
+        end
+
         _env.out.print(trees.string())
 
 
